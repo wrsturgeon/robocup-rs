@@ -1,0 +1,3 @@
+[submodule "ext/GameController"]
+	path = ext/GameController
+	url = https://github.com/RoboCup-SPL/GameController.git
