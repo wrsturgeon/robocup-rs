@@ -31,7 +31,7 @@ run run-release: tests-passing
 
 push: tests-passing
 	git config advice.addIgnoredFile true
-	git add .gitignore *
+	git add .gitignore -A
 	git commit -m '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make push`'
 	git push
 
