@@ -29,7 +29,7 @@ impl GCLiaison {
         debug_println!("Received valid data from {:#?}; assuming it's the GC", addr);
         s.set_nonblocking(true).unwrap();
         // SO_REUSEPORT???
-        Self {            socket: s,gc_target: gc_recv_addr,handler: GCHandler { current: init_msg }}
+        Self { socket: s, gc_target: gc_recv_addr, handler: GCHandler { current: init_msg } }
     }
     pub fn get(&mut self) {
         if let Some((data, _)) = recv(&self.socket, false) {
@@ -60,13 +60,9 @@ pub fn recv(socket: &UdpSocket, block: bool) -> Option<(RoboCupGameControlData, 
     // https://stackoverflow.com/questions/25410028
     #[allow(clippy::uninit_assumed_init)]
     #[allow(invalid_value)]
-    let mut recv_struct: RoboCupGameControlData =
-        unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+    let mut recv_struct: RoboCupGameControlData = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
     let sashimi = unsafe {
-        std::slice::from_raw_parts_mut(
-            &mut recv_struct as *mut _ as *mut u8,
-            std::mem::size_of::<RoboCupGameControlData>(),
-        )
+        std::slice::from_raw_parts_mut(&mut recv_struct as *mut _ as *mut u8, std::mem::size_of::<RoboCupGameControlData>())
     };
 
     loop {

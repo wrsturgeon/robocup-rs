@@ -76,10 +76,7 @@ impl c::TeamInfo {
 
 impl c::RobotInfo {
     pub const fn new() -> Self {
-        Self {
-            penalty: 0,
-            secsTillUnpenalised: 0,
-        }
+        Self { penalty: 0, secsTillUnpenalised: 0 }
     }
 }
 

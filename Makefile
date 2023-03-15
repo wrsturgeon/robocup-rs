@@ -10,7 +10,7 @@ TARGET:=$(shell rustc -vV | grep host | cut -d ' ' -f 2-)
 cargo=cargo +nightly ${1} --target=${TARGET}
 PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
 RELEASE_COND=$(shell echo "$@" | grep -q '.*release.*' && echo '-r' || :)
-bindeps=update Cargo.toml rust-toolchain.toml .cargo/config deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ')
+bindeps=update Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ')
 
 debug: target/${TARGET}/debug/${PROJNAME} tests-passing
 release: target/${TARGET}/release/${PROJNAME} tests-passing
@@ -31,11 +31,13 @@ clean:
 	cargo $@
 	rm -fr ext src/spl error.txt tests-passing # deps-installed
 
-tests-passing:
+tests-passing: $(call bindeps,debug)
 	$(call cargo,clippy) --all-targets --all-features -- -D warnings
 	$(call cargo,test)
 	cargo fmt
 	touch $@
+
+test: tests-passing
 
 update: | ext/all
 	rustup $@

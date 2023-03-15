@@ -14,33 +14,24 @@ fn gen_c_bindings() {
         .expect("Couldn't generate bindings");
 
     std::fs::create_dir_all("src/spl").expect("Couldn't create `src/spl`");
-    bindings
-        .write_to_file("src/spl/c.rs")
-        .expect("Couldn't write bindings!");
+    bindings.write_to_file("src/spl/c.rs").expect("Couldn't write bindings!");
 }
 
 fn gen_team_enum() {
     use std::io::{BufRead, Write};
     println!("cargo:rerun-if-changed={}", TEAMCFG_PATH);
-    let mut team_rust =
-        std::fs::File::create("src/spl/cfg.rs").expect("Couldn't create SPL config Rust source");
+    let mut team_rust = std::fs::File::create("src/spl/cfg.rs").expect("Couldn't create SPL config Rust source");
     team_rust
         .write_all(
-            "#[allow(clippy::upper_case_acronyms)]\r\n#[allow(dead_code)]\r\n#[derive(Debug)]\r\npub enum Team {\r\n".as_bytes(),
+            "#[allow(clippy::upper_case_acronyms)]\r\n#[allow(dead_code)]\r\n#[derive(Debug)]\r\npub enum Team {\r\n"
+                .as_bytes(),
         )
         .expect("Couldn't write to SPL config Rust source");
-    let file = std::fs::File::open(TEAMCFG_PATH)
-        .expect("Couldn't open the GameController team configuration");
+    let file = std::fs::File::open(TEAMCFG_PATH).expect("Couldn't open the GameController team configuration");
     let reader = std::io::BufReader::new(file);
     for line in reader.lines().map(|x| x.expect("No line found")) {
-        let splat = line
-            .split_once('=')
-            .expect("No `=` found on a line in the GameController team config");
-        let name = splat.1[1..]
-            .split_once(',')
-            .map(|x| x.0)
-            .unwrap_or(splat.1)
-            .replace(|c: char| !c.is_alphanumeric(), "");
+        let splat = line.split_once('=').expect("No `=` found on a line in the GameController team config");
+        let name = splat.1[1..].split_once(',').map(|x| x.0).unwrap_or(splat.1).replace(|c: char| !c.is_alphanumeric(), "");
         team_rust
             .write_fmt(format_args!(
                 "    {}{} = {},\r\n",
@@ -50,33 +41,25 @@ fn gen_team_enum() {
             ))
             .expect("Couldn't write to the Rust-translated GameController team config");
     }
-    team_rust
-        .write_all("}\r\n".as_bytes())
-        .expect("Couldn't write to SPL config Rust source");
+    team_rust.write_all("}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
 }
 
 fn gen_comm_trait() {
     use std::io::{BufRead, Write};
     println!("cargo:rerun-if-changed={}", GCDATA_PATH);
-    let mut interrupt_rust =
-        std::fs::File::create("src/spl/interrupt.rs").expect("Couldn't create GC data trait file");
-    let mut diff_rust =
-        std::fs::File::create("src/spl/diff.rs").expect("Couldn't create GC diff file");
+    let mut interrupt_rust = std::fs::File::create("src/spl/interrupt.rs").expect("Couldn't create GC data trait file");
+    let mut diff_rust = std::fs::File::create("src/spl/diff.rs").expect("Couldn't create GC diff file");
     interrupt_rust
         .write_all("#[allow(non_snake_case)]\r\npub trait GCDataInterruptHandler {\r\n".as_bytes())
         .expect("Couldn't write to GC data trait file");
     diff_rust
         .write_all("use crate::spl::interrupt::GCDataInterruptHandler;\r\npub trait GCUpdate {\r\n    fn update(&mut self, new: crate::spl::c::RoboCupGameControlData);\r\n}\r\n\r\nimpl GCUpdate for crate::state::game::GCHandler {\r\nfn update(&mut self, new: crate::spl::c::RoboCupGameControlData) {\r\n".as_bytes())
         .expect("Couldn't write to GC diff file");
-    let file = std::fs::File::open(GCDATA_PATH)
-        .expect("Couldn't open the GameController data struct header");
+    let file = std::fs::File::open(GCDATA_PATH).expect("Couldn't open the GameController data struct header");
     let reader = std::io::BufReader::new(file);
     let mut lines = reader.lines().map(|x| x.expect("No line found"));
     let mut line = lines.next();
-    while line
-        .as_ref()
-        .is_some_and(|x| !x.contains("struct RoboCupGameControlData"))
-    {
+    while line.as_ref().is_some_and(|x| !x.contains("struct RoboCupGameControlData")) {
         line = lines.next();
     }
     while line.as_ref().is_some_and(|x| !x.contains('{')) {
@@ -103,8 +86,7 @@ fn gen_comm_trait() {
                 _ => eidx += 1,
             };
         }
-        let keyword =
-            std::str::from_utf8(&bytes[bidx..eidx]).expect("Couldn't translate from UTF8");
+        let keyword = std::str::from_utf8(&bytes[bidx..eidx]).expect("Couldn't translate from UTF8");
         interrupt_rust
             .write_fmt(format_args!("    fn interrupt_{}(&self);\n", keyword))
             .expect("Couldn't write to GC data trait file");
@@ -116,12 +98,8 @@ fn gen_comm_trait() {
             .expect("Couldn't write to GC data trait file");
         line = lines.next();
     }
-    interrupt_rust
-        .write_all("}\r\n".as_bytes())
-        .expect("Couldn't write to SPL config Rust source");
-    diff_rust
-        .write_all("}\r\n}\r\n".as_bytes())
-        .expect("Couldn't write to SPL config Rust source");
+    interrupt_rust.write_all("}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
+    diff_rust.write_all("}\r\n}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
 }
 
 fn main() {
