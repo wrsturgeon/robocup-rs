@@ -1,0 +1,9 @@
+[unstable]
+avoid-dev-deps = true
+binary-dep-depinfo = true
+build-std = ["std"] # NOTE: ALL VALID ENTRIES @ ~/.rustup/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/library
+doctest-in-workspace = true
+doctest-xcompile = true
+# keep-going = true
+panic-abort-tests = true
+rustdoc-map = true
