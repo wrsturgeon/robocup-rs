@@ -21,7 +21,7 @@ disassemble-release: release; TODO
 
 target/%/debug/${PROJNAME}: $(call bindeps,debug)
 	make update # sneak this in here so dependencies aren't constantly out of date
-	RUSTFLAGS='${RUSTFLAGS}' $(call cargo,rustc) ${RELEASE_COND} -- $${RUSTFLAGS}
+	RUSTFLAGS='${RUSTFLAGS}' $(call cargo,rustc) ${RELEASE_COND} -Zunstable-options --keep-going -- $${RUSTFLAGS}
 	
 target/%/release/${PROJNAME}: $(call bindeps,release)
 	make update # sneak this in here so dependencies aren't constantly out of date
@@ -57,7 +57,7 @@ deps-installed: install-dependencies.sh
 	touch $@
 
 ext/GameController/bin/%: $(shell find ext/GameController -type f ! -path '*/bin/*')
-	cd $< && ant
+	cd ext/GameController && ant
 
 ext/%: | ext
 	git submodule update --init --remote --recursive

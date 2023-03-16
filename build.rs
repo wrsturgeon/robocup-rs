@@ -2,6 +2,8 @@
 
 #![feature(is_some_and)]
 
+use heck::ToSnakeCase;
+
 const TEAMCFG_PATH: &str = "ext/GameController/resources/config/spl/teams.cfg";
 const GCDATA_PATH: &str = "ext/GameController/examples/c/RoboCupGameControlData.h";
 
@@ -47,14 +49,10 @@ fn gen_team_enum() {
 fn gen_comm_trait() {
     use std::io::{BufRead, Write};
     println!("cargo:rerun-if-changed={}", GCDATA_PATH);
-    let mut interrupt_rust = std::fs::File::create("src/spl/interrupt.rs").expect("Couldn't create GC data trait file");
-    let mut diff_rust = std::fs::File::create("src/spl/diff.rs").expect("Couldn't create GC diff file");
-    interrupt_rust
-        .write_all("#[allow(non_snake_case)]\r\npub trait GCDataInterruptHandler {\r\n".as_bytes())
+    let mut gated_rust = std::fs::File::create("src/spl/gated.rs").expect("Couldn't create GC data trait file");
+    gated_rust
+        .write_all("struct WrappedGCData /* private */ {\r\n    current: crate::spl::c::RoboCupGameControlData\r\n}\r\n\r\npub struct GCData {\r\n    current: WrappedGCData\r\n}\r\n\r\nimpl GCData {\r\n    pub fn new(data: crate::spl::c::RoboCupGameControlData) -> Self {\r\n    Self { current: WrappedGCData { current: data } }\r\n}\r\n    pub fn update(&mut self, new: crate::spl::c::RoboCupGameControlData) {\r\n".as_bytes())
         .expect("Couldn't write to GC data trait file");
-    diff_rust
-        .write_all("use crate::spl::interrupt::GCDataInterruptHandler;\r\npub trait GCUpdate {\r\n    fn update(&mut self, new: crate::spl::c::RoboCupGameControlData);\r\n}\r\n\r\nimpl GCUpdate for crate::state::game::GCHandler {\r\nfn update(&mut self, new: crate::spl::c::RoboCupGameControlData) {\r\n".as_bytes())
-        .expect("Couldn't write to GC diff file");
     let file = std::fs::File::open(GCDATA_PATH).expect("Couldn't open the GameController data struct header");
     let reader = std::io::BufReader::new(file);
     let mut lines = reader.lines().map(|x| x.expect("No line found"));
@@ -87,19 +85,12 @@ fn gen_comm_trait() {
             };
         }
         let keyword = std::str::from_utf8(&bytes[bidx..eidx]).expect("Couldn't translate from UTF8");
-        interrupt_rust
-            .write_fmt(format_args!("    fn interrupt_{}(&self);\n", keyword))
-            .expect("Couldn't write to GC data trait file");
-        diff_rust
-            .write_fmt(format_args!(
-                "    if self.current.{} != new.{} {{ self.current.{} = new.{}; self.interrupt_{}(); }}\n",
-                keyword, keyword, keyword, keyword, keyword
-            ))
+        gated_rust
+            .write_fmt(format_args!("        if self.current.current.{} != new.{} {{\r\n            self.current.current.{} = new.{};\r\n            crate::state::interrupt::new_{}(new.{});\r\n        }}\n", keyword, keyword, keyword, keyword, keyword.to_snake_case(), keyword))
             .expect("Couldn't write to GC data trait file");
         line = lines.next();
     }
-    interrupt_rust.write_all("}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
-    diff_rust.write_all("}\r\n}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
+    gated_rust.write_all("    }\r\n}\r\n".as_bytes()).expect("Couldn't write to SPL config Rust source");
 }
 
 fn main() {

@@ -1,7 +1,6 @@
 use crate::spl::c::RoboCupGameControlData;
 use crate::spl::c::RoboCupGameControlReturnData;
-use crate::spl::diff::GCUpdate;
-use crate::state::game::GCHandler;
+use crate::spl::gated::GCData;
 use core::net::IpAddr::V4;
 use core::net::Ipv4Addr;
 use core::net::SocketAddr;
@@ -10,7 +9,7 @@ use std::net::UdpSocket;
 pub struct GCLiaison {
     socket: UdpSocket,
     gc_target: SocketAddr,
-    handler: GCHandler,
+    gcdata: GCData,
 }
 
 const _: () = assert!(crate::spl::c::GAMECONTROLLER_DATA_PORT <= u16::MAX.into());
@@ -29,11 +28,11 @@ impl GCLiaison {
         debug_println!("Received valid data from {:#?}; assuming it's the GC", addr);
         s.set_nonblocking(true).unwrap();
         // SO_REUSEPORT???
-        Self { socket: s, gc_target: gc_recv_addr, handler: GCHandler { current: init_msg } }
+        Self { socket: s, gc_target: gc_recv_addr, gcdata: GCData::new(init_msg) }
     }
     pub fn get(&mut self) {
         if let Some((data, _)) = recv(&self.socket, false) {
-            self.handler.update(data);
+            self.gcdata.update(data);
             let send_struct = RoboCupGameControlReturnData {
                 header: crate::spl::GC_RETURN_HEADER,
                 version: crate::spl::GC_RETURN_VERSION,
@@ -85,6 +84,7 @@ pub fn recv(socket: &UdpSocket, block: bool) -> Option<(RoboCupGameControlData, 
         if recv_struct.header == crate::spl::GC_DATA_HEADER
             && recv_struct.teams.iter().any(|x| x.teamNumber == crate::spl::TEAM_NUMBER)
         {
+            debug_assert_eq!(recv_struct.version, crate::spl::GC_DATA_VERSION);
             return Some((recv_struct, srcaddr));
         } else {
             debug_println!(

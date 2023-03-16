@@ -10,3 +10,4 @@ debug_print = { git = "https://github.com/RustyNixieTube/debug_print.git", branc
 
 [build-dependencies]
 bindgen = { git = "https://github.com/rust-lang/rust-bindgen.git", branch = "main" }
+heck = { git = "https://github.com/withoutboats/heck.git", branch = "master" }

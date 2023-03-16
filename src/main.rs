@@ -1,6 +1,5 @@
 #![crate_type = "bin"]
 #![deny(warnings)] // equivalent of C -Werror
-#![allow(dead_code)]
 #![feature(ip_in_core, const_trait_impl, const_convert)]
 
 #[macro_use]
