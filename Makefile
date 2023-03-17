@@ -110,9 +110,11 @@ commit: add
 pull: commit
 	git pull origin main
 
-pr: pull check
+push: pull
 	git push -u origin $$(git branch --show-current)
-	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`'
+
+pr: push check
+	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`' || :
 	gh pr merge --auto --merge
 	git checkout main
 	git pull
