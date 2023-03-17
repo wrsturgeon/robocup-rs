@@ -1,10 +1,6 @@
 name: Makefile CI
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: [push]
 
 jobs:
   build:
@@ -17,11 +13,5 @@ jobs:
     - name: Clean, just in case
       run: make clean
 
-    - name: Make a debug build
-      run: make debug
-
-    - name: Make a release build
-      run: make release
-
-    - name: Check, just to make sure
+    - name: make check (debug, release, & test)
       run: make check

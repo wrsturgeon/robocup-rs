@@ -51,7 +51,7 @@ fn gen_comm_trait() {
     println!("cargo:rerun-if-changed={}", GCDATA_PATH);
     let mut gated_rust = std::fs::File::create("src/spl/gated.rs").expect("Couldn't create GC data trait file");
     gated_rust
-        .write_all("struct WrappedGCData /* private */ {\r\n    current: crate::spl::c::RoboCupGameControlData\r\n}\r\n\r\npub struct GCData {\r\n    current: WrappedGCData\r\n}\r\n\r\nimpl GCData {\r\n    pub fn new(data: crate::spl::c::RoboCupGameControlData) -> Self {\r\n    Self { current: WrappedGCData { current: data } }\r\n}\r\n    pub fn update(&mut self, new: crate::spl::c::RoboCupGameControlData) {\r\n".as_bytes())
+        .write_all("struct WrappedGCData /* private */ {\r\n    current: crate::spl::c::RoboCupGameControlData,\r\n}\r\n\r\npub struct GCData {\r\n    current: WrappedGCData,\r\n}\r\n\r\nimpl GCData {\r\n    pub fn new(data: crate::spl::c::RoboCupGameControlData) -> Self {\r\n        Self { current: WrappedGCData { current: data } }\r\n    }\r\n    pub fn update(&mut self, new: crate::spl::c::RoboCupGameControlData) {\r\n".as_bytes())
         .expect("Couldn't write to GC data trait file");
     let file = std::fs::File::open(GCDATA_PATH).expect("Couldn't open the GameController data struct header");
     let reader = std::io::BufReader::new(file);
