@@ -1,4 +1,4 @@
-.PHONY: check clean format playtest run run-release test format update
+.PHONY: check clean format playtest pr run run-release test format update
 .PRECIOUS: deps-installed tests-passing
 .SUFFIXES:
 
@@ -81,6 +81,13 @@ open-gc: ext/GameController/bin/GameController.jar
 	$(call run_jar_bg,GameController)
 
 playtest: open-gc run-debug
+
+pr: check
+	git branch --show-current | grep -q main && git checkout -b dev || :
+	git add -A
+	git commit -m "$$(read -r line_read && echo "$${line_read}")"
+	git push -u origin $$(git branch --show-current)
+	gh pr create
 
 # target/%/${PROJNAME}.d:
 # 	if [ ! -f $@ ]; then make $*; fi
