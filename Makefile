@@ -102,4 +102,4 @@ pr: pull check
 	git checkout main
 	git pull
 	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
-	git remote prune origin)
+	git remote prune origin
