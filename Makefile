@@ -79,7 +79,13 @@ playtest: open-gc run-debug
 
 pr: check
 	git branch --show-current | grep -q main && git checkout -b dev || :
-	git add -A && echo "Please write a very brief (~5-word) description of your changes:" && git commit -m "$$(read -r line_read && echo "$${line_read}")" && git push -u origin $$(git branch --show-current) && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`'
+	git add -A
+	if [ ! -z "$$(git status --porcelain)" ]; then \
+	     echo "Please write a very brief (~5-word) description of your changes:" \
+	  && git commit -m "$$(read -r line_read && echo "$${line_read}")" \
+	  && git push -u origin $$(git branch --show-current) \
+	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`'; \
+	  fi
 
 # target/%/${PROJNAME}.d:
 # 	if [ ! -f $@ ]; then make $*; fi
