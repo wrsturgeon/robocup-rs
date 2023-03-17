@@ -85,7 +85,7 @@ playtest: open-gc run-debug
 pr: check
 	git branch --show-current | grep -q main && git checkout -b dev || :
 	git add -A
-	git commit -m "$$(read -r line_read && echo "$${line_read}")"
+	git commit -m "$$(echo "Please write a very brief (~5-word) description of your changes:" && read -r line_read && echo "$${line_read}")"
 	git push -u origin $$(git branch --show-current)
 	gh pr create
 
