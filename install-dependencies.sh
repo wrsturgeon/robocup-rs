@@ -26,6 +26,7 @@ rustup update
 rustup self update
 rustup toolchain install nightly
 rustup component add rust-src --toolchain nightly
+rustup component add rustfmt --toolchain nightly
 rustup override set nightly
 rustup component add clippy
 cargo install cargo-asm
