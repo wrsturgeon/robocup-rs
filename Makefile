@@ -85,15 +85,15 @@ pr: check
 	  && read -r line_read \
 	  && git commit -m "$${line_read}" \
 	  && git push -u origin $$(git branch --show-current) \
-	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`' \
+	  && gh pr create --web -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`' \
 		&& gh pr merge --auto --merge \
 		&& make pull; \
 	  fi
 
 pull:
-	git checkout main || make pr
+	git checkout main
 	git pull
-	git branch -d dev || echo "No `dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it"
+	git branch -d dev || echo "No dev branch; this is fine, but if you have a development branch by another name, you should manually delete or update it"
 	git remote prune origin
 
 # target/%/${PROJNAME}.d:
