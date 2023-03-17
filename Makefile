@@ -107,11 +107,8 @@ commit: add
 	  && git commit -m "$${line_read}"; \
 	  fi
 
-pr: add # check
-	$(call commit_and,git push -u origin $$(git branch --show-current) \
-	  && gh pr create -t "$${line_read}" -b '${USERNAME} used `make pr`' \
-		&& gh pr merge --auto --merge \
-		&& make pull)
+pull: commit
+	git pull origin main
 
 push: pull
 	git push -u origin $$(git branch --show-current)
@@ -122,4 +119,4 @@ pr: push # check
 	git checkout main
 	git pull
 	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
-	git remote prune origin
+	git remote prune origin)
