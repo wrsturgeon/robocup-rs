@@ -1,4 +1,4 @@
-.PHONY: check clean format playtest run run-release test format update
+.PHONY: check clean format playtest pr run run-release test format update
 .PRECIOUS: deps-installed tests-passing
 .SUFFIXES:
 
@@ -50,11 +50,6 @@ update: | ext/all
 	rustup $@
 	cargo $@
 
-push: tests-passing
-	git add .gitignore -A
-	git commit -m '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make push`'
-	git push
-
 ext:
 	mkdir -p $@
 
@@ -81,6 +76,18 @@ open-gc: ext/GameController/bin/GameController.jar
 	$(call run_jar_bg,GameController)
 
 playtest: open-gc run-debug
+
+pr: check
+	git branch --show-current | grep -q main && git checkout -b dev || :
+	git add -A
+	if [ ! -z "$$(git status --porcelain)" ]; then \
+	     echo "Please write a very brief (~5-word) description of your changes:" \
+	  && read -r line_read \
+	  && git commit -m "$${line_read}" \
+	  && git push -u origin $$(git branch --show-current) \
+	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`'; \
+		gh pr merge --auto --merge; \
+	  fi
 
 # target/%/${PROJNAME}.d:
 # 	if [ ! -f $@ ]; then make $*; fi

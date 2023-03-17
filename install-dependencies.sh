@@ -8,11 +8,18 @@ case "$(uname -s)" in
 *Darwin*)
   xcode-select --install || :
   brew --version || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  brew install cmake openssl llvm ant
+  brew install cmake openssl llvm ant gh
   ;;
 *Linux*)
   sudo apt-get install -y software-properties-common lsb-release cmake libssl-dev llvm-dev libclang-dev clang ant || \
   echo 'NOT finished; currently we only support `apt-get` on Linux, but this shouldn't be easy to change. Please fix and submit a PR if you can't use `apt-get`.'
+  # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+  type -p curl >/dev/null || sudo apt install curl -y
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+  && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+  && sudo apt update \
+  && sudo apt install gh -y
   ;;
 *)
   echo 'Unrecognized OS'
