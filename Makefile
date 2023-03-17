@@ -15,7 +15,7 @@ PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
 RELEASE_COND=$(shell echo "$@" | grep -q '.*release.*' && echo '-r' || :)
 FMTFLAGS:=--config-path $(shell pwd)/rustfmt.toml --unstable-features --error-on-unformatted
 format=cargo fmt $1 -- ${FMTFLAGS}
-bindeps=Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ')
+bindeps=Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ') | spl-headers.h
 
 release: target/${TARGET}/release/${PROJNAME} tests-passing
 debug: target/${TARGET}/debug/${PROJNAME} tests-passing
@@ -34,7 +34,7 @@ target/%/release/${PROJNAME}: $(call bindeps,release)
 	make update # sneak this in here so dependencies aren't constantly out of date
 	RUSTFLAGS="$(strip ${RUSTFLAGS} ${RUSTOPTFLAGS})" $(call cargo,rustc) ${CARGOFLAGS} -r
 
-spl-headers.h: ext/GameController/examples/c
+spl-headers.h: update-ext
 	echo '#ifndef SPL_HEADERS_H /* NOLINT(llvm-header-guard) */' > $@
 	echo '#define SPL_HEADERS_H' >> $@
 	for file in $$(find $< -type f); do echo '#include "'$${file}'"' >> $@; done
