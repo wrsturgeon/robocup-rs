@@ -77,26 +77,30 @@ open-gc: ext/GameController/bin/GameController.jar
 
 playtest: open-gc run-debug
 
-pr: check
-	git branch --show-current | grep -q main && git checkout -b dev || :
-	git add -A
-	if [ ! -z "$$(git status --porcelain)" ]; then \
-	     echo "Please write a very brief (~5-word) description of your changes:" \
+GIT_NOT_PERFECT_COPY:=[ ! -z "$$(git status --porcelain)" ]
+commit_and=@if ${GIT_NOT_PERFECT_COPY}; then \
+	   echo "Please write a very brief (~5-word) description of your changes:" \
 	  && read -r line_read \
 	  && git commit -m "$${line_read}" \
-	  && git push -u origin $$(git branch --show-current) \
-	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`' \
-		&& gh pr merge --auto --merge \
-		&& make pull; \
+		&& $1; \
 	  fi
 
+add:
+	git branch --show-current | grep -q main && git checkout -b dev || :
+	git add -A
+
+commit: add
+	$(call commit_and,:)
+
+pr: add check
+	$(call commit_and,git push -u origin $$(git branch --show-current) \
+	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`' \
+		&& gh pr merge --auto --merge \
+		&& make pull)
+
 pull:
-	git checkout main || make pr
+	@if ${GIT_NOT_PERFECT_COPY}; then echo 'Changes not yet saved; please run `make pr` first (or, if not finished, `make commit`)'; exit 1; fi
+	git checkout main
 	git pull
-	git branch -d dev || echo "No `dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it"
+	git branch -d dev || echo 'No `dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
 	git remote prune origin
-
-# target/%/${PROJNAME}.d:
-# 	if [ ! -f $@ ]; then make $*; fi
-
-# include target/debug/${PROJNAME}.d target/release/${PROJNAME}.d
