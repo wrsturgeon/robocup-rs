@@ -86,6 +86,7 @@ pr: check
 	  && git commit -m "$${line_read}" \
 	  && git push -u origin $$(git branch --show-current) \
 	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`'; \
+		gh pr merge --auto; \
 	  fi
 
 # target/%/${PROJNAME}.d:
