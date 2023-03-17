@@ -13,5 +13,5 @@ jobs:
     - name: Clean, just in case
       run: make clean
 
-    - name: `make check` (debug, release, & test)
+    - name: make check (debug, release, & test)
       run: make check
