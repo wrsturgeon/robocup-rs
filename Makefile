@@ -107,13 +107,16 @@ commit: add
 	  && git commit -m "$${line_read}"; \
 	  fi
 
-pull: commit
-	git pull origin main
+pr: add # check
+	$(call commit_and,git push -u origin $$(git branch --show-current) \
+	  && gh pr create -t "$${line_read}" -b '${USERNAME} used `make pr`' \
+		&& gh pr merge --auto --merge \
+		&& make pull)
 
 push: pull
 	git push -u origin $$(git branch --show-current)
 
-pr: push check
+pr: push # check
 	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`' || :
 	gh pr merge --auto --merge
 	git checkout main
