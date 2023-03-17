@@ -17,8 +17,11 @@ jobs:
     - name: Clean, just in case
       run: make clean
 
+    - name: Make a debug build
+      run: make debug
+
     - name: Make a release build
       run: make release
 
-    - name: Check (and, in the process, make a debug build)
+    - name: Check, just to make sure
       run: make check
