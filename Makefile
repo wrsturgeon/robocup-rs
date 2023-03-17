@@ -94,29 +94,27 @@ playtest: open-gc-GameController kill run-debug-bg open-gc-TeamCommunicationMoni
 	make kill
 
 GIT_NOT_PERFECT_COPY:=[ ! -z "$$(git status --porcelain)" ]
-commit_and=@if ${GIT_NOT_PERFECT_COPY}; then \
-	   echo "Please write a very brief (~5-word) description of your changes:" \
-	  && read -r line_read \
-	  && git commit -m "$${line_read}" \
-		&& $1; \
-	  fi
+commit_and=
 
 add:
 	git branch --show-current | grep -q main && git checkout -b ${USERNAME}-dev || :
 	git add -A
 
 commit: add
-	$(call commit_and,:)
+	@if ${GIT_NOT_PERFECT_COPY}; then \
+	  echo "Please write a very brief (~5-word) description of your changes:" \
+	  && read -r line_read \
+	  && git commit -m "$${line_read}"; \
+	  fi
 
-pr: add # check
-	$(call commit_and,git push -u origin $$(git branch --show-current) \
-	  && gh pr create -t "$${line_read}" -b '${USERNAME} used `make pr`' \
-		&& gh pr merge --auto --merge \
-		&& make pull)
+pull: commit
+	git pull origin main
 
-pull:
-	@if ${GIT_NOT_PERFECT_COPY}; then echo 'Changes not yet saved; please run `make pr` first (or, if not finished, `make commit`)'; exit 1; fi
+pr: pull check
+	git push -u origin $$(git branch --show-current)
+	gh pr create -t "$$(git log -1 --pretty=%B | tail -n 1)" -b '${USERNAME} used `make pr`'
+	gh pr merge --auto --merge
 	git checkout main
 	git pull
 	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
-	git remote prune origin
+	git remote prune origin)
