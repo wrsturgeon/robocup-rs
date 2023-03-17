@@ -1,4 +1,4 @@
-.PHONY: clean playtest run run-release test update
+.PHONY: check clean format playtest run run-release test format update
 .PRECIOUS: deps-installed tests-passing
 .SUFFIXES:
 
@@ -10,10 +10,12 @@ TARGET:=$(shell rustc -vV | grep host | cut -d ' ' -f 2-)
 cargo=cargo +nightly ${1} --target=${TARGET}
 PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
 RELEASE_COND=$(shell echo "$@" | grep -q '.*release.*' && echo '-r' || :)
+FMTFLAGS:=--config-path $(shell pwd)/rustfmt.toml --unstable-features --error-on-unformatted
+format=cargo fmt $1 -- ${FMTFLAGS}
 bindeps=update Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ')
 
-debug: target/${TARGET}/debug/${PROJNAME} tests-passing
 release: target/${TARGET}/release/${PROJNAME} tests-passing
+debug: target/${TARGET}/debug/${PROJNAME} tests-passing
 run-debug: debug; target/${TARGET}/debug/${PROJNAME}
 run-release: release; target/${TARGET}/release/${PROJNAME}
 disassemble-debug: debug; TODO
@@ -34,10 +36,15 @@ clean:
 tests-passing: $(call bindeps,debug)
 	$(call cargo,clippy) --all-targets --all-features -- -D warnings
 	$(call cargo,test)
-	cargo fmt
+	rustfmt ${FMTFLAGS} --check $$(find src/spl -type f) # if this fails, the problem is in build.rs, which writes these files!!!
+	$(call format,--check) # if this fails, just run `make format`
 	touch $@
 
 test: tests-passing
+check: debug release test
+
+format:
+	$(call format)
 
 update: | ext/all
 	rustup $@
