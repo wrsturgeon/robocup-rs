@@ -8,10 +8,10 @@ case "$(uname -s)" in
 *Darwin*)
   xcode-select --install || :
   brew --version || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  brew install cmake openssl llvm ant gh
+  brew install cmake openssl llvm ant git gh
   ;;
 *Linux*)
-  sudo apt-get install -y software-properties-common lsb-release cmake libssl-dev llvm-dev libclang-dev clang ant || \
+  sudo apt-get install -y software-properties-common lsb-release cmake libssl-dev llvm-dev libclang-dev clang ant git || \
   echo 'NOT finished; currently we only support `apt-get` on Linux, but this shouldn't be easy to change. Please fix and submit a PR if you can't use `apt-get`.'
   # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
   type -p curl >/dev/null || sudo apt install curl -y
@@ -37,5 +37,9 @@ rustup component add rustfmt --toolchain nightly
 rustup override set nightly
 rustup component add clippy
 cargo install cargo-asm
+
+# Git
+git config --global pull.rebase true
+git config --global fetch.prune true
 
 echo '\033[0;1;32mGood to go!\033[0m'

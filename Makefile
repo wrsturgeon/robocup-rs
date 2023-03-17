@@ -6,6 +6,7 @@
 RUSTFLAGS=# -Zmove-size-limit=4
 RUSTOPTFLAGS=-Copt-level=3 -Ctarget-cpu=native
 
+USERNAME:=$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev)
 TARGET:=$(shell rustc -vV | grep host | cut -d ' ' -f 2-)
 cargo=cargo +nightly ${1} --target=${TARGET}
 PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
@@ -86,7 +87,7 @@ commit_and=@if ${GIT_NOT_PERFECT_COPY}; then \
 	  fi
 
 add:
-	git branch --show-current | grep -q main && git checkout -b dev || :
+	git branch --show-current | grep -q main && git checkout -b ${USERNAME}-dev || :
 	git add -A
 
 commit: add
@@ -94,7 +95,7 @@ commit: add
 
 pr: add check
 	$(call commit_and,git push -u origin $$(git branch --show-current) \
-	  && gh pr create -t "$${line_read}" -b '$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev) used `make pr`' \
+	  && gh pr create -t "$${line_read}" -b '${USERNAME} used `make pr`' \
 		&& gh pr merge --auto --merge \
 		&& make pull)
 
@@ -102,5 +103,5 @@ pull:
 	@if ${GIT_NOT_PERFECT_COPY}; then echo 'Changes not yet saved; please run `make pr` first (or, if not finished, `make commit`)'; exit 1; fi
 	git checkout main
 	git pull
-	git branch -d dev || echo 'No `dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
+	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
 	git remote prune origin
