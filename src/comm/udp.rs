@@ -12,8 +12,8 @@ pub struct GCLiaison {
     gcdata: GCData,
 }
 
-const _: () = assert!(crate::spl::c::GAMECONTROLLER_DATA_PORT <= u16::MAX.into());
-const _: () = assert!(crate::spl::c::GAMECONTROLLER_RETURN_PORT <= u16::MAX.into());
+const _: () = assert!(crate::spl::c::GAMECONTROLLER_DATA_PORT <= u16::MAX as u32);
+const _: () = assert!(crate::spl::c::GAMECONTROLLER_RETURN_PORT <= u16::MAX as u32);
 const GC_DATA_PORT: u16 = crate::spl::c::GAMECONTROLLER_DATA_PORT as u16;
 const GC_RETURN_PORT: u16 = crate::spl::c::GAMECONTROLLER_RETURN_PORT as u16;
 
