@@ -37,7 +37,7 @@ target/%/release/${PROJNAME}: $(call bindeps,release)
 spl-headers.h: update-ext
 	echo '#ifndef SPL_HEADERS_H /* NOLINT(llvm-header-guard) */' > $@
 	echo '#define SPL_HEADERS_H' >> $@
-	for file in $$(find ext/examples/c -type f); do echo '#include "'$${file}'"' >> $@; done
+	for file in $$(find ext/GameController/examples/c -type f); do echo '#include "'$${file}'"' >> $@; done
 	echo '#endif /* SPL_HEADERS_H */' >> $@
 
 clean:
