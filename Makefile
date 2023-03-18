@@ -37,7 +37,7 @@ target/%/release/${PROJNAME}: $(call bindeps,release)
 spl-headers.h: update-ext
 	echo '#ifndef SPL_HEADERS_H /* NOLINT(llvm-header-guard) */' > $@
 	echo '#define SPL_HEADERS_H' >> $@
-	for file in $$(find $< -type f); do echo '#include "'$${file}'"' >> $@; done
+	for file in $$(find ext -type f); do echo '#include "'$${file}'"' >> $@; done
 	echo '#endif /* SPL_HEADERS_H */' >> $@
 
 clean:
@@ -117,6 +117,8 @@ push: pull
 pr: push # check
 	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`' || :
 	gh pr merge --auto --merge
+	make clean
+	make check
 	git checkout main
 	git pull
 	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
