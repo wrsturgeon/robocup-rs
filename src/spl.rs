@@ -7,9 +7,9 @@ pub mod c;
 pub mod cfg;
 pub mod gated;
 
-const _: () = assert!(c::GAMECONTROLLER_STRUCT_VERSION < u8::MAX as u32);
-const _: () = assert!(c::GAMECONTROLLER_RETURN_STRUCT_VERSION < u8::MAX as u32);
-const _: () = assert!((cfg::Team::UPennalizers as usize) < u8::MAX as usize);
+const _: () = assert!(c::GAMECONTROLLER_STRUCT_VERSION < u8::MAX.into());
+const _: () = assert!(c::GAMECONTROLLER_RETURN_STRUCT_VERSION < u8::MAX.into());
+const _: () = assert!((cfg::Team::UPennalizers as usize) < u8::MAX.into());
 pub const GC_DATA_HEADER: [i8; 4] = cstr_to_header(c::GAMECONTROLLER_STRUCT_HEADER);
 pub const GC_DATA_VERSION: u8 = c::GAMECONTROLLER_STRUCT_VERSION as u8;
 pub const GC_RETURN_HEADER: [i8; 4] = cstr_to_header(c::GAMECONTROLLER_RETURN_STRUCT_HEADER);

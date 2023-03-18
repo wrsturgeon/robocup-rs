@@ -5,7 +5,7 @@
 # https://doc.rust-lang.org/rustc/command-line-arguments.html
 CARGOFLAGS:=-Zunstable-options# --keep-going
 RUSTFLAGS:=--verbose -Clto -Cembed-bitcode # not sure why, but `embed-bitcode` is required by LTO yet not enabled by it
-RUSTDBGFLAGS:=-Copt-level=0 -Zsanitizer=address
+RUSTDBGFLAGS:=-Copt-level=0# -Zsanitizer=address
 RUSTOPTFLAGS:=-Copt-level=3 -Ctarget-cpu=native
 
 USERNAME:=$(shell cd ~ && pwd | rev | cut -d '/' -f 1 | rev)
@@ -42,7 +42,7 @@ spl-headers.h: update-ext
 
 clean:
 	cargo $@
-	rm -fr ext src/spl error.txt tests-passing # deps-installed
+	rm -fr ext src/spl error.txt tests-passing spl-headers.h # deps-installed
 
 tests-passing: $(call bindeps,debug)
 	$(call cargo,clippy) --all-targets --all-features -- -D warnings

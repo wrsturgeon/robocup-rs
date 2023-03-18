@@ -12,8 +12,8 @@ pub struct GCLiaison {
     gcdata: GCData,
 }
 
-const _: () = assert!(crate::spl::c::GAMECONTROLLER_DATA_PORT <= u16::MAX as u32);
-const _: () = assert!(crate::spl::c::GAMECONTROLLER_RETURN_PORT <= u16::MAX as u32);
+const _: () = assert!(crate::spl::c::GAMECONTROLLER_DATA_PORT <= u16::MAX.into());
+const _: () = assert!(crate::spl::c::GAMECONTROLLER_RETURN_PORT <= u16::MAX.into());
 const GC_DATA_PORT: u16 = crate::spl::c::GAMECONTROLLER_DATA_PORT as u16;
 const GC_RETURN_PORT: u16 = crate::spl::c::GAMECONTROLLER_RETURN_PORT as u16;
 
@@ -39,9 +39,9 @@ impl GCLiaison {
                 playerNum: 1,
                 teamNum: crate::spl::TEAM_NUMBER,
                 fallen: 0,
-                pose: [0., 0., 0.],
+                pose: Default::default(),
                 ballAge: 0.,
-                ball: [0., 0.],
+                ball: Default::default(),
             };
             let sashimi = unsafe {
                 std::slice::from_raw_parts(
