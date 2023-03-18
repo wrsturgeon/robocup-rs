@@ -25,7 +25,7 @@ impl GCLiaison {
         debug_println!("Waiting to hear from the GameController...");
         let (init_msg, addr) = recv(&s, true).unwrap();
         let gc_recv_addr = SocketAddr::new(addr.ip(), GC_RETURN_PORT);
-        debug_println!("Received valid data from {:#?}; assuming it's the GC", addr);
+        debug_println!("Valid data from {:#?}; assuming it's the GC & responding on :{:#?}", addr.ip(), GC_RETURN_PORT);
         s.set_nonblocking(true).unwrap();
         // SO_REUSEPORT???
         Self { socket: s, gc_target: gc_recv_addr, gcdata: GCData::new(init_msg) }
