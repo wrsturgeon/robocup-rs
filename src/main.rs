@@ -1,12 +1,12 @@
 #![crate_type = "bin"]
 #![deny(warnings)]
-#![allow(incomplete_features)] // turn this off if anything is behaving inexplicably
+// #![allow(incomplete_features)] // turn this off if anything is behaving inexplicably
 #![feature( // https://github.com/rust-lang/rust/blob/master/compiler/rustc_feature/src/active.rs -> CtrlF 'declare_features! '
     auto_traits,
     box_patterns,
     cfg_sanitize,
     cfg_version,
-    const_closures,
+    // const_closures,
     const_convert,
     const_fn_floating_point_arithmetic,
     const_for,
@@ -27,7 +27,7 @@
     // generic_associated_types_extended,
     // generic_assert,
     // generic_assert_internals,
-    generic_const_exprs,
+    // generic_const_exprs,
     half_open_range_patterns_in_slices,
     if_let_guard,
     inline_const,
@@ -42,7 +42,7 @@
     precise_pointer_size_matching,
     repr_simd,
     simd_ffi,
-    specialization,
+    // specialization,
     stmt_expr_attributes,
     strict_provenance,
     thread_local,
