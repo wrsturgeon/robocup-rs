@@ -39,7 +39,9 @@ rustup component add clippy
 cargo install cargo-asm
 
 # Git
-git config --global pull.rebase true
+git config --global pull.rebase false
+git config --global pull.merge false
+git config --global pull.ff-only true
 git config --global fetch.prune true
 
 echo '\033[0;1;32mGood to go!\033[0m'
