@@ -108,10 +108,10 @@ commit: add
 	  fi
 
 pull: commit
-	# git pull
+	git pull
 	git pull origin main
 
-push: pull
+push: commit
 	git push -u origin $$(git branch --show-current)
 
 pr: push # check
