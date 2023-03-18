@@ -3,8 +3,8 @@
 .SUFFIXES:
 
 # https://doc.rust-lang.org/rustc/command-line-arguments.html
-CARGOFLAGS:=-Zunstable-options# --keep-going
-RUSTFLAGS:=--verbose -Clto -Cembed-bitcode # not sure why, but `embed-bitcode` is required by LTO yet not enabled by it
+CARGOFLAGS:=#-Zunstable-options --keep-going
+RUSTFLAGS:=--verbose # -Clto -Cembed-bitcode not sure why, but `embed-bitcode` is required by LTO yet not enabled by it
 RUSTDBGFLAGS:=-Copt-level=0# -Zsanitizer=address
 RUSTOPTFLAGS:=-Copt-level=3 -Ctarget-cpu=native
 
