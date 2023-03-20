@@ -128,5 +128,4 @@ toml.rs: src/toml.rs | cfg.toml
 	cp $< $@
 
 cfg.toml:
-	echo '[robocup-rs]' > $@
-	echo 'player_num = 0' >> $@
+	if [ ! -f '$@' ]; then echo '[robocup-rs]' > $@ && echo 'player_num = 0' >> $@; fi
