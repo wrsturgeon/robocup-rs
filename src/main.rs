@@ -55,6 +55,7 @@ extern crate debug_print;
 mod comm;
 mod spl;
 mod state;
+mod toml;
 
 fn main() {
     debug_println!("We're team #{:#?}", spl::TEAM_NUMBER);

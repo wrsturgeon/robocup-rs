@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 debug_print = { git = "https://github.com/RustyNixieTube/debug_print.git", branch = "master" }
+toml-cfg = { git = "https://github.com/jamesmunns/toml-cfg.git", branch = "main" }
 
 [build-dependencies]
 bindgen = { git = "https://github.com/rust-lang/rust-bindgen.git", branch = "main" }
 heck = { git = "https://github.com/withoutboats/heck.git", branch = "master" }
+toml-cfg = { git = "https://github.com/jamesmunns/toml-cfg.git", branch = "main" }

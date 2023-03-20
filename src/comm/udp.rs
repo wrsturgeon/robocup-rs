@@ -36,7 +36,7 @@ impl GCLiaison {
             let send_struct = RoboCupGameControlReturnData {
                 header: crate::spl::GC_RETURN_HEADER,
                 version: crate::spl::GC_RETURN_VERSION,
-                playerNum: 1,
+                playerNum: crate::toml::CONFIG.player_num,
                 teamNum: crate::spl::TEAM_NUMBER,
                 fallen: 0,
                 pose: Default::default(),

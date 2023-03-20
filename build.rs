@@ -2,7 +2,10 @@
 
 #![feature(is_some_and)]
 
+mod toml;
+
 use heck::ToSnakeCase;
+use std::io::{BufRead, Write};
 
 const TEAMCFG_PATH: &str = "ext/GameController/resources/config/spl/teams.cfg";
 const GCDATA_PATH: &str = "ext/GameController/examples/c/RoboCupGameControlData.h";
@@ -20,7 +23,6 @@ fn gen_c_bindings() {
 }
 
 fn gen_team_enum() {
-    use std::io::{BufRead, Write};
     println!("cargo:rerun-if-changed={}", TEAMCFG_PATH);
     let mut team_rust = std::fs::File::create("src/spl/cfg.rs").expect("Couldn't create SPL config Rust source");
     team_rust
@@ -47,7 +49,6 @@ fn gen_team_enum() {
 }
 
 fn gen_comm_trait() {
-    use std::io::{BufRead, Write};
     println!("cargo:rerun-if-changed={}", GCDATA_PATH);
     let mut gated_rust = std::fs::File::create("src/spl/gated.rs").expect("Couldn't create GC data trait file");
     gated_rust
@@ -94,8 +95,12 @@ fn gen_comm_trait() {
 }
 
 fn main() {
-    println!("cargo:rerun-if-changed=build.rs");
     gen_c_bindings();
     gen_team_enum();
     gen_comm_trait();
+
+    // print!("cargo:rerun-if-changed=cfg.toml");
+    if toml::CONFIG.player_num == 0 {
+        panic!("Please fill out `cfg.toml` (in this folder) with your player/jersey number.")
+    }
 }
