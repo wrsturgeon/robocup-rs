@@ -15,7 +15,7 @@ PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
 RELEASE_COND=$(shell echo "$@" | grep -q '.*release.*' && echo '-r' || :)
 FMTFLAGS:=--config-path $(shell pwd)/rustfmt.toml --unstable-features --error-on-unformatted
 format=cargo fmt $1 -- ${FMTFLAGS}
-bindeps=Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ') | spl-headers.h
+bindeps=$(strip Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' '))
 
 release: target/${TARGET}/release/${PROJNAME} tests-passing
 debug: target/${TARGET}/debug/${PROJNAME} tests-passing
@@ -26,25 +26,23 @@ run-release-bg: release; target/${TARGET}/release/${PROJNAME} &
 disassemble-debug: debug; TODO
 disassemble-release: release; TODO
 
-target/%/debug/${PROJNAME}: $(call bindeps,debug)
-	make update # sneak this in here so dependencies aren't constantly out of date
+target/%/debug/${PROJNAME}: $(strip $(call bindeps,debug)) | update
 	RUSTFLAGS="$(strip ${RUSTFLAGS} ${RUSTDBGFLAGS})" $(call cargo,rustc) ${CARGOFLAGS}
-	
-target/%/release/${PROJNAME}: $(call bindeps,release)
-	make update # sneak this in here so dependencies aren't constantly out of date
+
+target/%/release/${PROJNAME}: $(strip $(call bindeps,release)) | update
 	RUSTFLAGS="$(strip ${RUSTFLAGS} ${RUSTOPTFLAGS})" $(call cargo,rustc) ${CARGOFLAGS} -r
 
-spl-headers.h: update-ext
+spl-headers.h: ext/GameController/examples/c | update-ext
 	echo '#ifndef SPL_HEADERS_H /* NOLINT(llvm-header-guard) */' > $@
 	echo '#define SPL_HEADERS_H' >> $@
-	for file in $$(find ext/GameController/examples/c -type f); do echo '#include "'$${file}'"' >> $@; done
+	for file in $$(find $< -type f); do echo '#include "'$${file}'"' >> $@; done
 	echo '#endif /* SPL_HEADERS_H */' >> $@
 
 clean:
 	cargo $@
 	rm -fr ext src/spl error.txt tests-passing spl-headers.h # deps-installed
 
-tests-passing: $(call bindeps,debug)
+tests-passing: $(strip $(call bindeps,debug))
 	$(call cargo,clippy) --all-targets --all-features -- -D warnings
 	$(call cargo,test)
 	rustfmt ${FMTFLAGS} --check $$(find src/spl -type f) # if this fails, the problem is in build.rs, which writes these files!!!
@@ -75,6 +73,8 @@ deps-installed: install-dependencies.sh
 ext/GameController/bin/%: $(shell find ext/GameController -type f ! -path '*/bin/*') | update-ext
 	cd ext/GameController && ant
 
+ext/GameController/examples/c: | ext
+
 open-gc-%: ext/GameController/bin/%.jar
 	ps aux | grep -v grep | grep -q '.*$*.*' || { cd ext/GameController/bin && java -jar $*.jar & }
 
@@ -104,7 +104,7 @@ commit: add
 	@if ${GIT_NOT_PERFECT_COPY}; then \
 	  echo "Please write a very brief (~5-word) description of your changes:" \
 	  && read -r line_read \
-	  && git commit -m "$${line_read}"; \
+	  && git commit -S -m "$${line_read}"; \
 	  fi
 
 pull: commit
