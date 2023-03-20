@@ -47,7 +47,9 @@ git config --global fetch.prune true
 git config --global commit.gpgsign true
 
 # GPG
+set +u
 if [ -z "${GITHUB_ACTIONS}" ]; then
+  set -u
   export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
   if [ -z "${GPGRAW}" ]; then
     set +x
@@ -74,5 +76,6 @@ if [ -z "${GITHUB_ACTIONS}" ]; then
   fi
   git config --global user.signingkey ${GPGRAW}!
 fi
+set -u
 
 echo '\033[0;1;32mGood to go!\033[0m'
