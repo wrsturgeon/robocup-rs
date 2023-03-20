@@ -8,10 +8,11 @@ case "$(uname -s)" in
 *Darwin*)
   xcode-select --install || :
   brew --version || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  brew install cmake openssl llvm ant git gh
+  brew install cmake gnupg openssl llvm ant git gh
+  brew install --cask gpg-suite-no-mail
   ;;
 *Linux*)
-  sudo apt-get install -y software-properties-common lsb-release cmake libssl-dev llvm-dev libclang-dev clang ant git || \
+  sudo apt-get install -y software-properties-common lsb-release cmake gnupg libssl-dev llvm-dev libclang-dev clang ant git || \
   echo 'NOT finished; currently we only support `apt-get` on Linux, but this shouldn't be easy to change. Please fix and submit a PR if you can't use `apt-get`.'
   # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
   type -p curl >/dev/null || sudo apt install curl -y
@@ -43,5 +44,29 @@ git config --global pull.rebase false
 git config --global pull.merge false
 git config --global pull.ff-only true
 git config --global fetch.prune true
+git config --global commit.gpgsign true
+
+# GPG
+export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
+if [ -z "${GPGRAW}" ]; then
+  set +x
+  echo ''
+  echo ''
+  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+  echo '%%%%% Please just PRESS ENTER when prompted to accept the defaults. Thanks! %%%%%'
+  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+  echo ''
+  echo ''
+  gpg --full-generate-key
+  set -x
+  export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
+fi
+if [ -z "$(gh gpg-key list | grep ${GPGRAW})" ]; then
+  gh auth refresh -s write:gpg_key
+  gpg --armor --export ${GPGRAW} | gh gpg-key add -
+fi
+git config --global user.signingkey ${GPGRAW}!
 
 echo '\033[0;1;32mGood to go!\033[0m'
