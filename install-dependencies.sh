@@ -47,30 +47,32 @@ git config --global fetch.prune true
 git config --global commit.gpgsign true
 
 # GPG
-export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
-if [ -z "${GPGRAW}" ]; then
-  set +x
-  echo ''
-  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-  echo '%%%%% Please just PRESS ENTER when prompted to accept the defaults. %%%%%'
-  echo '%%%%% When propted (Y/n), type Y and enter for "yes".               %%%%%'
-  echo '%%%%% When asked for an email, please use your GitHub email:        %%%%%'
-  echo '%%%%%   go to https://github.com/settings/emails and look for the   %%%%%'
-  echo '%%%%%   "Primary email address" section. It should look like        %%%%%'
-  echo '%%%%%   48659042+username@users.noreply.github.com. Copy and paste. %%%%%'
-  echo '%%%%% Thanks!                                                       %%%%%'
-  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-  echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-  echo ''
-  gpg --full-generate-key
-  set -x
+if [ -z "${GITHUB_ACTIONS}" ]; then
   export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
+  if [ -z "${GPGRAW}" ]; then
+    set +x
+    echo ''
+    echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    echo '%%%%% Please just PRESS ENTER when prompted to accept the defaults. %%%%%'
+    echo '%%%%% When propted (Y/n), type Y and enter for "yes".               %%%%%'
+    echo '%%%%% When asked for an email, please use your GitHub email:        %%%%%'
+    echo '%%%%%   go to https://github.com/settings/emails and look for the   %%%%%'
+    echo '%%%%%   "Primary email address" section. It should look like        %%%%%'
+    echo '%%%%%   48659042+username@users.noreply.github.com. Copy and paste. %%%%%'
+    echo '%%%%% Thanks!                                                       %%%%%'
+    echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+    echo ''
+    gpg --full-generate-key
+    set -x
+    export GPGRAW=$(gpg --list-secret-keys --keyid-format=long 2> /dev/null | grep '^-' -A1 | grep -v '^-' | cut -d '/' -f 2 | cut -d ' ' -f 1)
+  fi
+  if [ -z "$(gh gpg-key list | grep ${GPGRAW})" ]; then
+    gh auth refresh -s write:gpg_key
+    gpg --armor --export ${GPGRAW} | gh gpg-key add -
+  fi
+  git config --global user.signingkey ${GPGRAW}!
 fi
-if [ -z "$(gh gpg-key list | grep ${GPGRAW})" ]; then
-  gh auth refresh -s write:gpg_key
-  gpg --armor --export ${GPGRAW} | gh gpg-key add -
-fi
-git config --global user.signingkey ${GPGRAW}!
 
 echo '\033[0;1;32mGood to go!\033[0m'
