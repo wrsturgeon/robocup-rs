@@ -15,7 +15,7 @@ PROJNAME:=$(shell pwd | rev | cut -d '/' -f 1 | rev)
 RELEASE_COND=$(shell echo "$@" | grep -q '.*release.*' && echo '-r' || :)
 FMTFLAGS:=--config-path $(shell pwd)/rustfmt.toml --unstable-features --error-on-unformatted
 format=cargo fmt $1 -- ${FMTFLAGS}
-bindeps=$(strip Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell find target -path '*/${1}/*' -name robocup-rs.d -type f -print -quit | xargs cat | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' '))
+bindeps=$(strip Cargo.toml rust-toolchain.toml .cargo/config rustfmt.toml deps-installed spl-headers.h $(shell if [ -f target/${TARGET}/${1}/${PROJNAME}.d ]; then echo "$$(cat target/${TARGET}/${1}/${PROJNAME}.d | cut -d ':' -f 2- | tr ' ' '\n' | grep -v 'spl/' | tr '\n' ' ')"; else echo "$$(find src -type f)"; fi))
 
 release: target/${TARGET}/release/${PROJNAME} tests-passing
 debug: target/${TARGET}/debug/${PROJNAME} tests-passing
@@ -55,7 +55,7 @@ check: debug release test
 format:
 	$(call format)
 
-update: | update-ext
+update: | toml.rs update-ext
 	rustup $@
 	cargo $@
 
@@ -116,10 +116,16 @@ push: commit
 
 pr: push # check
 	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`' || :
-	gh pr merge --auto --merge
+	gh pr merge --auto --squash
 	make clean
 	make check
 	git checkout main
 	git pull
 	git branch -d ${USERNAME}-dev || echo 'No `${USERNAME}-dev` branch; this is fine, but if you have a development branch by another name, you should manually delete or update it'
 	git remote prune origin
+
+toml.rs: src/toml.rs | cfg.toml
+	cp $< $@
+
+cfg.toml:
+	if [ ! -f '$@' ]; then echo '[robocup-rs]' > $@ && echo 'player_num = 0' >> $@; fi

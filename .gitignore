@@ -1,6 +1,8 @@
 /Cargo.lock
+/cfg.toml
 /deps-installed
 /spl-headers.h
 /src/spl/
 /target/
 /tests-passing
+/toml.rs
