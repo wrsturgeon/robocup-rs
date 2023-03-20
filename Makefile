@@ -116,7 +116,7 @@ push: commit
 
 pr: push # check
 	gh pr create -t "$$(git log -1 --pretty=%B | head -n 1)" -b '${USERNAME} used `make pr`' || :
-	gh pr merge --auto --merge
+	gh pr merge --auto --squash
 	make clean
 	make check
 	git checkout main
